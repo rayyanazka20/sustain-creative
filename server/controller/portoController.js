@@ -1,18 +1,20 @@
 import { Portfolio,Category  } from "../db/dbconnectiom.js";
 
 export const CreatePorto = async (req, res) => {
-        const { portfolioName, companyName, eventDate, categoryId } = req.body;
-
     try {
-
+        const { portfolioName, companyName, eventDate, categoryId, description } = req.body; // 🟢 tambahkan description
         const userId = req.user.id;
+
+        const imageUrl = req.file?.path; // URL Cloudinary otomatis dari multer-storage-cloudinary
 
         const newPorto = await Portfolio.create({
             portfolioName,
             companyName,
             eventDate,
             categoryId,
+            description, // 🟢 simpan ke database
             userId,
+            image: imageUrl,
         });
 
         res.status(201).json({
@@ -24,6 +26,8 @@ export const CreatePorto = async (req, res) => {
         res.status(500).json({ message: "Terjadi kesalahan server" });
     }
 };
+
+
 
 export const GetPortfolios = async (req, res) => {
     try {
@@ -83,32 +87,97 @@ export const GetPortfolioById = async (req, res) => {
 
 export const DeletePortoById = async (req, res) => {
     try {
-        const { id } = req.params; // ID portfolio dari URL
-        const userId = req.user.id; // ID user dari token
+        const { id } = req.params;
+        const userId = req.user.id;
 
-        // Cek apakah portfolio milik user yang sedang login
         const portfolio = await Portfolio.findOne({
             where: { id, userId },
         });
 
         if (!portfolio) {
             return res.status(404).json({
-                message: `Portfolio dengan ID ${id} tidak ditemukan atau bukan milik user ini`,
+                message: "Portfolio tidak ditemukan atau bukan milik Anda",
             });
         }
 
-        // Hapus portfolio
-        await Portfolio.destroy({
-            where: { id, userId },
-        });
+        // 🔹 Hapus gambar dari Cloudinary (jika ada)
+        if (portfolio.image) {
+            try {
+                // Ambil public_id dari URL Cloudinary
+                const publicId = portfolio.image
+                    .split("/")
+                    .pop()
+                    .split(".")[0];
+
+                await cloudinary.uploader.destroy(publicId);
+                console.log("Gambar Cloudinary terhapus:", publicId);
+            } catch (cloudErr) {
+                console.warn("Gagal hapus gambar dari Cloudinary:", cloudErr);
+            }
+        }
+
+        // 🔹 Hapus data dari database
+        await portfolio.destroy();
 
         res.status(200).json({
-            message: `Portfolio dengan ID ${id} berhasil dihapus`,
+            message: `Portfolio "${portfolio.portfolioName}" dan gambarnya berhasil dihapus`,
         });
     } catch (err) {
         console.error("Error saat menghapus portfolio:", err);
-        res.status(500).json({
-            message: "Terjadi kesalahan server",
+        res.status(500).json({ message: "Terjadi kesalahan server" });
+    }
+};
+
+export const UpdatePortfolio = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+
+        // Pastikan portfolio milik user
+        const portfolio = await Portfolio.findOne({ where: { id, userId } });
+        if (!portfolio) {
+            return res.status(404).json({ message: "Portfolio tidak ditemukan atau bukan milik Anda" });
+        }
+
+        // Jika tidak ada req.body, artinya formData tidak terbaca
+        if (!req.body) {
+            return res.status(400).json({ message: "Data form tidak ditemukan" });
+        }
+
+        // Ambil data dari form body (yang dikirim via FormData)
+        const { portfolioName, companyName, eventDate, categoryId, description } = req.body;
+
+        // Ambil URL gambar baru jika diupload
+        let imageUrl = portfolio.image;
+        if (req.file) {
+            // Hapus gambar lama dari Cloudinary
+            if (portfolio.image) {
+                try {
+                    const publicId = portfolio.image.split("/").pop().split(".")[0];
+                    await cloudinary.uploader.destroy(publicId);
+                } catch (err) {
+                    console.warn("Gagal menghapus gambar lama:", err);
+                }
+            }
+            imageUrl = req.file.path; // URL baru dari Cloudinary
+        }
+
+        // Update data portfolio
+        await portfolio.update({
+            portfolioName,
+            companyName,
+            eventDate,
+            categoryId,
+            description,
+            image: imageUrl,
         });
+
+        res.status(200).json({
+            message: "Portfolio berhasil diperbarui",
+            data: portfolio,
+        });
+    } catch (err) {
+        console.error("❌ Error saat mengupdate portfolio:", err);
+        res.status(500).json({ message: "Terjadi kesalahan server" });
     }
 };

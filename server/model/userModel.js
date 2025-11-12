@@ -23,6 +23,10 @@ const createUserModel=(sequelize)=>{
             allowNull:false,
             unique:true
         },
+        imageProfile:{
+            type:DataTypes.STRING,
+            allowNull:true,
+        },
         refreshToken:{
             type:DataTypes.TEXT,
             allowNull:true,

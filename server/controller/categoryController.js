@@ -1,11 +1,9 @@
-import categoryModel from "../model/categoryModel.js";
+import { Category } from "../db/dbconnectiom.js";
 
 export const GetCategories = async (req, res) => {
     try {
         // Ambil semua data kategori dari database
-        const categories = await categoryModel.findAll({
-            order: [["id", "ASC"]], // opsional: urutkan berdasarkan id
-        });
+        const categories = await Category.findAll();
 
         // Jika tidak ada data kategori
         if (categories.length === 0) {

@@ -19,6 +19,14 @@ const createPortfolioModel = (sequelize) => {
             type: DataTypes.DATEONLY,
             allowNull: false,
         },
+        description: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+        },
+        image: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
         categoryId: {   // Tambahkan foreign key
             type: DataTypes.INTEGER,
             allowNull: false,
