@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+<<<<<<< HEAD
+      <module fileurl="file://$PROJECT_DIR$/.idea/server.iml" filepath="$PROJECT_DIR$/.idea/server.iml" />
+=======
       <module fileurl="file://$PROJECT_DIR$/.idea/sustain-creative.iml" filepath="$PROJECT_DIR$/.idea/sustain-creative.iml" />
+>>>>>>> 36e776d6072df4f3d6eed828513b22e283a648bf
     </modules>
   </component>
 </project>
