@@ -1,7 +1,5 @@
 import SideBar from "../../component/SideBar.jsx";
-import PortfolioDetailModal from "@/component/portfolioForm.jsx";
 import AdminHero from "@/component/AdminHero.jsx";
-import FilteringPortfolio from "@/component/FilteringPortofolio.jsx";
 import AdminProfile from "@/component/AdminProfile.jsx";
 import ChangePasswordForm from "@/component/EditPasswordForm.jsx";
 

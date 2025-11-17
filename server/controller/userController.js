@@ -1,10 +1,10 @@
-import { User } from "../db/dbconnectiom.js";
+import {Portfolio, User} from "../db/dbconnectiom.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken"
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js"
 
 export const registerController = async (req, res) => {
-    const { username, email, password } = req.body;
+    const { username, email, password,address,phoneNumber } = req.body;
     const existUser = await User.findOne({ where: { username: username } });
     if (existUser != null) {
         return res.status(409).json("User is already exist");
@@ -77,7 +77,7 @@ export const loginController = async (req, res) => {
 
 export const  refreshController=async(req,res)=>{
     const refreshToken=req.cookies.refreshToken
-    //console.log(refreshToken)
+
     try{
         if(!refreshToken){
             return res.status(403).json("token is empty");
@@ -113,6 +113,98 @@ export const logoutController=async(req,res)=>{
 
 }
 
-export const profileController=async(req,res)=>{
-    return res.json("Dashboard");
-}
+export const getProfileController = async (req, res) => {
+    const { id } = req.params;
+    try {
+
+        const user = await User.findOne({
+            where: { id: id },
+            attributes: { exclude: ["password"] },
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: "User tidak ditemukan" });
+        }
+      return res.status(200).json({
+          message: "Portfolio berhasil diperbarui",
+          data: user,
+      });
+    } catch (err) {
+        return res.status(500).json({ message: "Server error", error: err });
+    }
+};
+
+export const updateProfileController = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const user = await User.findOne({ where: { id } });
+        if (!user) {
+            return res.status(404).json({ message: "User tidak ditemukan" });
+        }
+
+        const { username, email, address, phoneNumber } = req.body;
+
+        let imageUrl = user.imageProfile;
+        if (req.file) {
+            imageUrl = req.file.path;
+        }
+
+        await user.update({
+            username: username ?? user.username,
+            email: email ?? user.email,
+            address: address ?? user.address,
+            phoneNumber: phoneNumber ?? user.phoneNumber,
+            imageProfile: imageUrl,
+        });
+
+        return res.status(200).json({
+            message: "Profile berhasil diperbarui",
+            data: user,
+        });
+    } catch (err) {
+        console.error("Error update profile:", err);
+        return res.status(500).json({ message: "Terjadi kesalahan server" });
+    }
+};
+
+// to do list update password
+
+export const updatePasswordController = async (req, res) => {
+    const { id } = req.params;
+    const { oldPassword,newPassword,confirmPassword } = req.body;
+
+    try {
+        const user = await User.findOne({ where: { id } });
+        if (!user) {
+            return res.status(404).json({ message: "User tidak ditemukan" });
+        }
+
+
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Password lama salah" });
+        }
+
+
+        if (confirmPassword !== newPassword) {
+            return res.status(400).json({ message: "password dont match" });
+        }
+
+        const newHashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await user.update({
+            password: newHashedPassword,
+        });
+
+        return res.status(200).json({
+            message: "Profile berhasil diperbarui",
+            data: user,
+        });
+    } catch (err) {
+        console.error("Error update profile:", err);
+        return res.status(500).json({ message: "Terjadi kesalahan server" });
+    }
+};
+
+

@@ -22,13 +22,13 @@ export default function LoginForm() {
         setError("");
 
         try {
-            const res = await axiosInstance.post("/login", formData, { withCredentials: true });
+            const res = await axiosInstance.post("/login", formData);
 
-            // Simpan data ke Redux
             dispatch(
                 login({
                     user: res.data.user,
                     token: res.data.accessToken,
+                    lastLogin: new Date().getTime(),
                 })
             );
 

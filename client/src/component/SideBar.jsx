@@ -22,9 +22,10 @@ export default function SideBar() {
 
             // Hapus user & token dari redux
             dispatch(logout());
-
             alert("Logout berhasil!");
-            navigate("/admin/login"); // arahkan ke halaman login
+            navigate("/admin/login");
+
+
         } catch (err) {
             console.error("Logout gagal:", err);
             setError(err.response?.data?.message || "Terjadi kesalahan saat logout.");

@@ -5,14 +5,14 @@ export const CreatePorto = async (req, res) => {
         const { portfolioName, companyName, eventDate, categoryId, description } = req.body; // 🟢 tambahkan description
         const userId = req.user.id;
 
-        const imageUrl = req.file?.path; // URL Cloudinary otomatis dari multer-storage-cloudinary
+        const imageUrl = req.file?.path;
 
         const newPorto = await Portfolio.create({
             portfolioName,
             companyName,
             eventDate,
             categoryId,
-            description, // 🟢 simpan ke database
+            description,
             userId,
             image: imageUrl,
         });
@@ -26,6 +26,37 @@ export const CreatePorto = async (req, res) => {
         res.status(500).json({ message: "Terjadi kesalahan server" });
     }
 };
+
+export const GetPortfoliosGlobal = async (req, res) => {
+    try {
+
+        const portfolios = await Portfolio.findAll({
+            attributes: ['id', 'portfolioName','companyName','description'],
+            order: [["eventDate", "DESC"]],
+            include: [
+                {
+                    model: Category,
+                    as: "Category",
+                    attributes: ["name"],
+                },
+            ],
+            limit: 6,
+        });
+
+        if (portfolios.length === 0) {
+            return res.status(404).json({ message: "Belum ada portfolio untuk user ini" });
+        }
+
+        res.status(200).json({
+            message: "Berhasil mengambil data portfolio",
+            data: portfolios,
+        });
+    } catch (err) {
+        console.error("Error saat mengambil portfolio:", err);
+        res.status(500).json({ message: "Terjadi kesalahan server" });
+    }
+};
+
 
 
 
@@ -61,7 +92,6 @@ export const GetPortfolios = async (req, res) => {
 
 export const GetPortfolioById = async (req, res) => {
     try {
-        const { id } = req.params;
         const userId = req.user.id;
 
         // Cek apakah portfolio dengan ID tersebut milik user ini

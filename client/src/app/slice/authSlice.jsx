@@ -3,34 +3,40 @@ import { createSlice } from "@reduxjs/toolkit";
 export const authSlice = createSlice({
     name: "authSlice",
     initialState: {
-        user: JSON.parse(localStorage.getItem("user")) || null,
-        token: localStorage.getItem("token") || null,
+        user: null,
+        token: null,
+        lastLogin: null,
     },
     reducers: {
         login: (state, action) => {
-            // Asumsikan payload-nya berbentuk { user: {...}, token: "..." }
-            state.user = action.payload.user;
-            state.token = action.payload.token;
+            const { user, token,lastLogin } = action.payload;
 
-            localStorage.setItem("user", JSON.stringify(action.payload.user));
-            localStorage.setItem("token", action.payload.token);
+            state.user = user;
+            state.token = token;
+            state.lastLogin = lastLogin;
+
+            localStorage.setItem("user", JSON.stringify(user));
+            localStorage.setItem("token", token);
+            localStorage.setItem("lastLogin", lastLogin);
         },
+
         logout: (state) => {
             state.user = null;
             state.token = null;
+            state.lastLogin = null;
 
             localStorage.removeItem("user");
             localStorage.removeItem("token");
+            localStorage.removeItem("lastLogin");
+
         },
     },
 });
 
 export const { login, logout } = authSlice.actions;
 
-// Selector untuk mengambil user dari state
 export const selectUser = (state) => state.auth.user;
-
-// Selector untuk mengambil token dari state
 export const selectToken = (state) => state.auth.token;
+export const selectLastLogin = (state) => state.auth.lastLogin;
 
 export default authSlice.reducer;

@@ -30,7 +30,7 @@ export const GetCategoryById = async (req, res) => {
         const { id } = req.params;
 
         // Cari kategori berdasarkan ID
-        const category = await categoryModel.findOne({
+        const category = await Category.findOne({
             where: { id },
         });
 

@@ -4,7 +4,7 @@ import sampleImage from "../assets/sample.jpg";
 import {useState} from "react";
 
 export default function PortoPage() {
-    const [active, setActive] = useState("all project"); // default tombol pertama
+    const [active, setActive] = useState("all project"); //
 
     const porto = [
         {

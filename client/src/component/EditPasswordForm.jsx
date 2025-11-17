@@ -1,8 +1,23 @@
+import {useUpdatePassword} from "@/api/userProfile.jsx";
+import {useState} from "react";
+
 export default function ChangePasswordForm() {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userId = user?.id;
+    const [password, setPassword] = useState({
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+    })
+
+    const {mutate,isPending,isError} = useUpdatePassword(userId);
     const handleSubmit = (e) => {
         e.preventDefault();
-        // TODO: Implementasi API ubah password (pakai axios)
-        alert("Password berhasil diperbarui (contoh)");
+        const formData = new FormData();
+        formData.append("oldPassword",password.oldPassword);
+        formData.append("newPassword",password.newPassword);
+        formData.append("confirmPassword",password.confirmPassword);
+        mutate(formData)
     };
 
     return (
@@ -29,6 +44,7 @@ export default function ChangePasswordForm() {
                                    focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                                    dark:bg-gray-800 dark:border-gray-600 dark:text-white"
                         required
+                        onChange={(e)=>setPassword({...password,oldPassword: e.target.value})}
                     />
                 </div>
 
@@ -49,6 +65,7 @@ export default function ChangePasswordForm() {
                                    focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                                    dark:bg-gray-800 dark:border-gray-600 dark:text-white"
                         required
+                        onChange={(e)=>setPassword({...password,newPassword: e.target.value})}
                     />
                 </div>
 
@@ -69,6 +86,7 @@ export default function ChangePasswordForm() {
                                    focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                                    dark:bg-gray-800 dark:border-gray-600 dark:text-white"
                         required
+                        onChange={(e)=>setPassword({...password,confirmPassword: e.target.value})}
                     />
                 </div>
 

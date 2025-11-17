@@ -23,6 +23,15 @@ const createUserModel=(sequelize)=>{
             allowNull:false,
             unique:true
         },
+        address : {
+            type:DataTypes.STRING,
+            allowNull:false,
+        },
+        phoneNumber : {
+            type:DataTypes.STRING,
+            allowNull:false,
+            unique:true,
+        },
         imageProfile:{
             type:DataTypes.STRING,
             allowNull:true,
