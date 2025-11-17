@@ -237,7 +237,7 @@ export const getSearchPortfolioController = async (req, res) => {
 
     try {
         const data = await Portfolio.findAll({
-            where: where,  // ⬅ perbaikan
+            where: where,
             include: [
                 {
                     model: Category,
