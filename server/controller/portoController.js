@@ -1,4 +1,5 @@
 import { Portfolio,Category  } from "../db/dbconnectiom.js";
+import {Op} from "sequelize";
 
 export const CreatePorto = async (req, res) => {
     try {
@@ -92,11 +93,11 @@ export const GetPortfolios = async (req, res) => {
 
 export const GetPortfolioById = async (req, res) => {
     try {
+        const { id } = req.params;
         const userId = req.user.id;
 
-        // Cek apakah portfolio dengan ID tersebut milik user ini
         const portfolio = await Portfolio.findOne({
-            where: { id, userId },
+            where: { id: id, userId: userId },
         });
 
         if (!portfolio) {
@@ -114,6 +115,7 @@ export const GetPortfolioById = async (req, res) => {
         res.status(500).json({ message: "Terjadi kesalahan server" });
     }
 };
+
 
 export const DeletePortoById = async (req, res) => {
     try {
@@ -211,3 +213,44 @@ export const UpdatePortfolio = async (req, res) => {
         res.status(500).json({ message: "Terjadi kesalahan server" });
     }
 };
+
+export const getSearchPortfolioController = async (req, res) => {
+    const { portfolioName, categoryId, startDate, endDate } = req.query;
+    const userId = req.user.id;
+
+    let where = { userId };
+
+    // 🔍 search by name
+    if (portfolioName) {
+        where.portfolioName = { [Op.like]: `%${portfolioName}%` };
+    }
+
+    // 🎯 filter category
+    if (categoryId) {
+        where.categoryId = categoryId;
+    }
+
+    // 📅 date range
+    if (startDate && endDate) {
+        where.eventDate = { [Op.between]: [startDate, endDate] };
+    }
+
+    try {
+        const data = await Portfolio.findAll({
+            where: where,  // ⬅ perbaikan
+            include: [
+                {
+                    model: Category,
+                    as: "Category",
+                    attributes: ["id", "name"],
+                },
+            ],
+        });
+
+        res.json({ status: true, data });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: false, message: err.message });
+    }
+};
+

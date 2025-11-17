@@ -104,4 +104,28 @@ export const useUpdatePortfolio = (id) => {
 
 
 
+export const useSearchPortfolio = (filters) => {
+    return useQuery({
+        queryKey: ["portfolioSearch", filters],
+        queryFn: async ({ queryKey }) => {
+            const [, filters] = queryKey;
+
+            const params = {};
+
+            if (filters?.portfolioName) params.portfolioName = filters.portfolioName;
+            if (filters?.category) params.categoryId = filters.category;
+            if (filters?.startDate) params.startDate = filters.startDate;
+            if (filters?.endDate) params.endDate = filters.endDate;
+
+            const res = await axiosInstance.get("/portfolio/search", { params });
+
+            return res.data.data || [];
+        },
+        enabled: !!filters,          // ⬅ hanya fetch saat user klik “Find”
+        keepPreviousData: true,
+    });
+};
+
+
+
 
