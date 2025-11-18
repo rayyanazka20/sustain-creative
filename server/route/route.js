@@ -11,7 +11,7 @@ import {
     CreatePorto,
     DeletePortoById,
     GetPortfolioById,
-    GetPortfolios, GetPortfoliosGlobal, getSearchPortfolioController, UpdatePortfolio
+    GetPortfolios, GetPortfoliosGlobal, GetPortfoliosGlobalByCategory, getSearchPortfolioController, UpdatePortfolio
 } from "../controller/portoController.js";
 import {DeleteCategoryById, GetCategories, GetCategoryById} from "../controller/categoryController.js";
 import multer from "multer";
@@ -41,20 +41,24 @@ router.put("/profile/:id",authenticateToken,upload.single("image"),updateProfile
 
 router.get("/portfolio/search", authenticateToken, getSearchPortfolioController);
 
+router.get("/portfolio/global", GetPortfoliosGlobal);
+router.get("/portfolio/global/:categoryName", GetPortfoliosGlobalByCategory);
+
+
+
 router.post("/portfolio", upload.single("image"), authenticateToken, CreatePorto);
-router.get("/portfolio",authenticateToken,GetPortfolios)
-router.get("/portfolio/:id",authenticateToken,GetPortfolioById)
-router.put("/portfolio/:id",upload.single("image"),authenticateToken,UpdatePortfolio)
-router.delete("/portfolio/:id",authenticateToken,DeletePortoById)
-router.post("portfolio/global",GetPortfoliosGlobal)
+router.get("/portfolio",authenticateToken,GetPortfolios);
+router.get("/portfolio/:id",authenticateToken,GetPortfolioById);
+router.put("/portfolio/:id",upload.single("image"),authenticateToken,UpdatePortfolio);
+router.delete("/portfolio/:id",authenticateToken,DeletePortoById);
+router.post("portfolio/global",GetPortfoliosGlobal);
 
 
+router.put("/password/:id",authenticateToken,updatePasswordController);
 
-router.put("/password/:id",authenticateToken,updatePasswordController)
-
-router.get("/category",GetCategories)
-router.get("/category/:id",GetCategoryById)
-router.delete("/category/:id",authenticateToken,DeleteCategoryById)
+router.get("/category",GetCategories);
+router.get("/category/:id",GetCategoryById);
+router.delete("/category/:id",authenticateToken,DeleteCategoryById);
 
 
 

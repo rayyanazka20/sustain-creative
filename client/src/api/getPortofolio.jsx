@@ -126,6 +126,36 @@ export const useSearchPortfolio = (filters) => {
     });
 };
 
+export const useGetGlobalPortfolio = () => {
+    return useQuery({
+        queryKey: ["portfolioGlobal"],
+        queryFn: async () => {
+            try {
+                const res = await axiosInstance.get("/portfolio/global");
+                return res.data.data || [];
+            } catch (err) {
+                if (err.response && err.response.status === 404) {
+                    return [];
+                }
+                throw err;
+            }
+        },
+    });
+}
+
+export const useSearchGlobalPortfolio = (category) => {
+    return useQuery({
+        queryKey: ["portfolioGlobal", category],
+        queryFn: async () => {
+            const res = await axiosInstance.get(`/portfolio/global/${category}`, {
+                params: { category }
+            });
+            return res.data.data || [];
+        },
+    });
+};
+
+
 
 
 

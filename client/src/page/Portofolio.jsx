@@ -1,52 +1,26 @@
-// PortoPage.jsx
 import CardPorto from "../component/CardPorto.jsx";
-import sampleImage from "../assets/sample.jpg";
-import {useState} from "react";
+import { useState } from "react";
+import { useGetGlobalPortfolio, useSearchGlobalPortfolio } from "@/api/getPortofolio.jsx";
 
 export default function PortoPage() {
-    const [active, setActive] = useState("all project"); //
+    const [active, setActive] = useState("all project");
 
-    const porto = [
-        {
-            image: sampleImage,
-            sub: "Production",
-            caption:
-                "We are your go-to event experts, specializing in captivating booth, stage, backdrop, etc.",
-        },
-        {
-            image: sampleImage,
-            sub: "Manpower",
-            caption:
-                "We specialize in providing professional manpower services for events...",
-        },
-        {
-            image: sampleImage,
-            sub: "Live Streaming",
-            caption:
-                "We provide live broadcasting services or what is often called live streaming...",
-        },
-        {
-            image: sampleImage,
-            sub: "Live Streaming",
-            caption:
-                "We provide live broadcasting services or what is often called live streaming...",
-        },
-        {
-            image: sampleImage,
-            sub: "Live Streaming",
-            caption:
-                "We provide live broadcasting services or what is often called live streaming...",
-        },
-        {
-            image: sampleImage,
-            sub: "Live Streaming",
-            caption:
-                "We provide live broadcasting services or what is often called live streaming...",
-        },
-    ];
+    // Ambil all portfolio (default)
+    const { data: allPortfolio, isLoading: loadingAll } = useGetGlobalPortfolio();
 
-    const catalog =["all project","event","multimedia","production"]
+    // Jika bukan "all project", ambil berdasarkan category
+    const categoryName =
+        active === "all project" ? null : active.toLowerCase();
 
+    const {
+        data: filteredPortfolio,
+        isLoading: loadingFiltered,
+    } = useSearchGlobalPortfolio(categoryName);
+
+    // Data yang akan ditampilkan
+    const dataToShow = active === "all project" ? allPortfolio : filteredPortfolio;
+
+    const catalog = ["all project", "event", "multimedia", "production"];
 
     return (
         <section id="about">
@@ -61,6 +35,8 @@ export default function PortoPage() {
                         with precision and creativity.
                     </p>
                 </div>
+
+                {/* Category Filter */}
                 <div className="flex flex-row items-center gap-[16px] justify-center w-full mb-[56px]">
                     {catalog.map((item, index) => (
                         <button
@@ -76,14 +52,15 @@ export default function PortoPage() {
                         </button>
                     ))}
                 </div>
-                {/* Grid container */}
+
+                {/* Portfolio List */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 justify-items-center text-left gap-[48px] mb-20">
-                    {porto.map((item, index) => (
+                    {(dataToShow || []).map((item, index) => (
                         <CardPorto
                             key={index}
-                            img_url={item.image} // ✅ gunakan nama yang benar
-                            sub={item.sub}
-                            caption={item.caption}
+                            img_url={item.image}
+                            sub={item.portfolioName}
+                            caption={item.description}
                         />
                     ))}
                 </div>
