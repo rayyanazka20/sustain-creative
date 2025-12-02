@@ -3,20 +3,32 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {useNavigate} from "react-router-dom";
 
 
-export const usePortfolio = () => {
+
+export const usePortfolio = (page = 1, limit = 10) => {
+
+    const queryKey = ["portfolio", { page, limit }];
+
     return useQuery({
-        queryKey: ["portfolio"],
+        queryKey: queryKey,
         queryFn: async () => {
             try {
-                const res = await axiosInstance.get("/portfolio");
-                return res.data.data || [];
+
+                const res = await axiosInstance.get(`/portfolio?page=${page}&limit=${limit}`);
+
+
+                return res.data;
+
             } catch (err) {
                 if (err.response && err.response.status === 404) {
-                    return [];
+
+                    return { data: [], meta: { totalPages: 0, currentPage: page, totalItems: 0, itemsPerPage: limit } };
                 }
                 throw err;
             }
         },
+
+        keepPreviousData: true,
+        staleTime: 5000,
     });
 };
 
@@ -104,14 +116,29 @@ export const useUpdatePortfolio = (id) => {
 
 
 
-export const useSearchPortfolio = (filters) => {
+// File: ../api/getPortofolio.jsx
+
+export const useSearchPortfolio = (filters, page = 1, limit = 10) => {
+
+    // 1. Tambahkan page dan limit ke queryKey
+    // Ini PENTING agar TanStack Query melakukan fetch ulang saat berpindah halaman
+    const queryKey = ["portfolioSearch", filters, { page, limit }];
+
+    // 2. Gunakan queryKey baru
     return useQuery({
-        queryKey: ["portfolioSearch", filters],
+        queryKey: queryKey,
         queryFn: async ({ queryKey }) => {
-            const [, filters] = queryKey;
 
-            const params = {};
+            // Destructure filters, page, dan limit dari queryKey
+            const [, filters, pagination] = queryKey;
 
+            // Parameter untuk request Axios
+            const params = {
+                page: pagination.page,
+                limit: pagination.limit
+            };
+
+            // Tambahkan parameter filter
             if (filters?.portfolioName) params.portfolioName = filters.portfolioName;
             if (filters?.category) params.categoryId = filters.category;
             if (filters?.startDate) params.startDate = filters.startDate;
@@ -119,9 +146,12 @@ export const useSearchPortfolio = (filters) => {
 
             const res = await axiosInstance.get("/portfolio/search", { params });
 
-            return res.data.data || [];
+            // 3. Ubah return value: Kembalikan objek response lengkap (termasuk meta)
+            // Ini agar komponen FilteringPortfolio bisa mengakses meta.totalPages
+            return res.data;
         },
-        enabled: !!filters,          // ⬅ hanya fetch saat user klik “Find”
+        // Hanya fetch jika filters sudah diisi
+        enabled: !!filters,
         keepPreviousData: true,
     });
 };

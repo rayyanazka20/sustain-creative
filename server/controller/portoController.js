@@ -97,9 +97,26 @@ export const GetPortfolios = async (req, res) => {
     try {
         const userId = req.user.id;
 
+        // 1. Ambil parameter dari Query
+        // Default: page 1 dan limit 10
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        // 2. Hitung OFFSET (Batas Awal Pengambilan Data)
+        // Rumus: (page - 1) * limit
+        const offset = (page - 1) * limit;
+
+        // 3. Query Total Data (untuk mengetahui jumlah halaman total)
+        const totalPortfolios = await Portfolio.count({
+            where: { userId },
+        });
+
+        // 4. Query Data dengan LIMIT dan OFFSET
         const portfolios = await Portfolio.findAll({
             where: { userId },
             order: [["createdAt", "DESC"]],
+            limit: limit,   // Jumlah data per halaman
+            offset: offset, // Data dimulai dari mana
             include: [
                 {
                     model: Category,
@@ -109,14 +126,29 @@ export const GetPortfolios = async (req, res) => {
             ],
         });
 
-        if (portfolios.length === 0) {
+        // 5. Hitung Total Halaman
+        const totalPages = Math.ceil(totalPortfolios / limit);
+
+        if (portfolios.length === 0 && page > 1) {
+            return res.status(404).json({ message: "Halaman tidak ditemukan" });
+        }
+
+        if (portfolios.length === 0 && page === 1) {
             return res.status(404).json({ message: "Belum ada portfolio untuk user ini" });
         }
 
+        // 6. Kirim Response dengan Metadata Pagination
         res.status(200).json({
             message: "Berhasil mengambil data portfolio",
+            meta: { // Metadata untuk kebutuhan frontend
+                totalItems: totalPortfolios,
+                totalPages: totalPages,
+                currentPage: page,
+                itemsPerPage: limit,
+            },
             data: portfolios,
         });
+
     } catch (err) {
         console.error("Error saat mengambil portfolio:", err);
         res.status(500).json({ message: "Terjadi kesalahan server" });
